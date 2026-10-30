@@ -41,5 +41,6 @@ export default defineConfig(({ mode }) => {
     // No manualChunks: the lazy /admin import already keeps supabase-js and
     // recharts out of the public bundle.
     plugins: [react(), vercelApiDev()],
+    build: { chunkSizeWarningLimit: 700 },
   };
 });

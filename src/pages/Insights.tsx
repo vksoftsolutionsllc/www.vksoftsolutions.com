@@ -13,7 +13,7 @@ export function InsightsOverview() {
   const visible = category === "All insights" ? articles : articles.filter(a => a.category === category);
   return (
     <InnerPage>
-      <Hero eyebrow="Ideas & perspectives" title={<>A little more clarity.<br /><span>A better next question.</span></>} copy="Practical guides on AI, technology decisions, cloud and building great teams — to help you start the next conversation with more context." breadcrumbs={[{ label: "Insights" }]} />
+      <Hero image="/images/analytics.jpg" eyebrow="Ideas & perspectives" title={<>A little more clarity.<br /><span>A better next question.</span></>} copy="Practical guides on AI, technology decisions, cloud and building great teams — to help you start the next conversation with more context." breadcrumbs={[{ label: "Insights" }]} />
       <section className="inner-section inner-section-tight">
         <div className="container">
           <div className="inner-filters" role="group" aria-label="Filter insights by topic">
@@ -46,7 +46,7 @@ export function ArticlePage() {
   if (!article) return <NotFound />;
   return (
     <InnerPage>
-      <Hero eyebrow={article.category} title={article.title} copy={article.description} breadcrumbs={[{ label: "Insights", href: "/insights" }, { label: article.category }]} compact />
+      <Hero image={article.image} eyebrow={article.category} title={article.title} copy={article.description} breadcrumbs={[{ label: "Insights", href: "/insights" }, { label: article.category }]} compact />
       <section className="inner-section inner-section-tight">
         <div className="container inner-editorial-layout">
           <aside className="inner-editorial-aside">

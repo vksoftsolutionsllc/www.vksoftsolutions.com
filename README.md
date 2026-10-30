@@ -51,7 +51,7 @@ Security model:
 ## Before launch
 
 - Fill in phone, office addresses and social links in `src/config/site.ts`. Empty fields are hidden.
-- Confirm that `info@` and `careers@vksoftsolutions.com` mailboxes exist.
+- Contact details (phone, `info@vksoftsolutionsllc.com`, Cumming GA office and map) live in `src/config/site.ts`.
 - Review the starter job descriptions (seeded as **drafts**) in Admin → Jobs, then publish real openings.
 - Have the privacy policy and terms reviewed.
 - Rotate the Supabase database password and the Turnstile secret, which were shared in plain text during setup. Then update `.env.local` and the Vercel environment variables.

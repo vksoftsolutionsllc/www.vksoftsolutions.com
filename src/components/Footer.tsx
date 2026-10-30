@@ -7,16 +7,19 @@ import { services, talent } from "../data/services";
 
 export default function Footer() {
   return (
-    <footer className="site-footer">
+    <footer className="site-footer panel-dark">
       <div className="container">
         <div className="footer-top">
-          <div className="footer-brand">
-            <Brand />
-            <p>IT consulting, software engineering and technology talent — built around your business.</p>
+          <Brand />
+          <p className="footer-tagline">Consult • Develop • Innovate</p>
+        </div>
+        <div className="footer-grid">
+          <div className="footer-about">
+            <p>IT consulting, software engineering and technology talent — built around your business, delivered across the US and India.</p>
             <div className="footer-contact">
-              {site.email && <a href={`mailto:${site.email}`}><Mail size={14} aria-hidden="true" />{site.email}</a>}
-              {site.phone && <a href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}><Phone size={14} aria-hidden="true" />{site.phone}</a>}
-              {site.social.linkedin && <a href={site.social.linkedin} target="_blank" rel="noreferrer"><ExternalLink size={14} aria-hidden="true" />LinkedIn</a>}
+              {site.email && <a href={`mailto:${site.email}`}><Mail size={15} aria-hidden="true" />{site.email}</a>}
+              {site.phone && <a href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}><Phone size={15} aria-hidden="true" />{site.phone}</a>}
+              {site.social.linkedin && <a href={site.social.linkedin} target="_blank" rel="noreferrer"><ExternalLink size={15} aria-hidden="true" />LinkedIn</a>}
             </div>
             {site.offices.map(o => <address key={o.label} className="footer-office"><strong>{o.label}</strong>{o.lines.map(l => <span key={l}>{l}</span>)}</address>)}
           </div>

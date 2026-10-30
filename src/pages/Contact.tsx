@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router";
-import { ArrowUpRight, CheckCircle2, LoaderCircle, Mail, Phone } from "lucide-react";
+import { ArrowUpRight, Briefcase, CheckCircle2, FileText, Layers, LoaderCircle, Mail, MapPin, Navigation, Phone, Users } from "lucide-react";
 import Turnstile, { type TurnstileHandle } from "../components/Turnstile";
 import FormField, { fieldA11y } from "../components/FormField";
+import { Hero, InnerPage, SignalPanel } from "../components/PageBlocks";
 import { ENGAGEMENT_TYPES, HEADCOUNT_OPTIONS, INQUIRY_KINDS, SERVICE_OPTIONS, TIMELINE_OPTIONS, type InquiryKind } from "../shared/forms";
 import { submitForm } from "../lib/submit";
 import { usePageMeta } from "../lib/meta";
-import { site } from "../config/site";
+import { mapEmbedUrl, mapLinkUrl, site, telHref } from "../config/site";
 
 const KIND_LABELS: Record<InquiryKind, { tab: string; heading: string; sub: string; message: string; placeholder: string }> = {
   project: { tab: "Start a project", heading: "Tell us about your project", sub: "Share what you’re working on and we’ll suggest a practical next step.", message: "Tell us about your project", placeholder: "What would you like to achieve? Share your challenge, timeline and any systems involved." },
@@ -73,14 +74,16 @@ export default function Contact() {
   const bind = (name: keyof Fields) => ({ ...fieldA11y(name, errors[name]), value: fields[name], disabled: sending, onChange: (e: { target: { value: string } }) => update(name, e.target.value) });
 
   return (
+    <InnerPage>
+    <Hero image="/images/office.jpg" eyebrow="Contact Us" title={<>What’s your<br /><span>next move?</span></>}
+      copy="Whether you’re planning a project, need specialists on your team or have a question, tell us a little about it and the right person will get back to you — usually within one business day."
+      breadcrumbs={[{ label: "Contact Us" }]}>
+      <SignalPanel label="Let’s talk." caption={<>{site.phone}<br />{site.email}</>} index={`${site.address.city}, ${site.address.region} · USA`} />
+    </Hero>
     <section className="contact-page">
       <div className="container">
-        <div className="contact-topline"><span className="eyebrow">CONTACT VK SOFT SOLUTIONS</span><span>We usually reply within one business day</span></div>
         <div className="contact-layout">
           <div className="contact-intro">
-            <p className="contact-kicker">Let’s connect</p>
-            <h1>What’s your next move?</h1>
-            <p className="contact-lead">Whether you’re planning a project, need specialists on your team or have a question, tell us a little about it and the right person will get back to you.</p>
             <div className="contact-expect">
               <h2>What happens next</h2>
               <ol>
@@ -90,12 +93,27 @@ export default function Contact() {
               </ol>
             </div>
             <div className="contact-focus">
-              <span>PREFER EMAIL?</span>
-              <p className="contact-direct">
-                <a href={`mailto:${site.email}`}><Mail size={15} aria-hidden="true" />{site.email}</a>
-                {site.phone && <a href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}><Phone size={15} aria-hidden="true" />{site.phone}</a>}
-              </p>
-              <p className="contact-careers-note">Looking for a job? <Link to="/careers">Browse open roles</Link> or <Link to="/careers/apply">send your résumé</Link>.</p>
+              <span>REACH US DIRECTLY</span>
+              <ul className="contact-info">
+                <li><span className="icon-badge"><Phone size={18} aria-hidden="true" /></span><div><small>Call us</small><a href={telHref}>{site.phone}</a></div></li>
+                <li><span className="icon-badge"><Mail size={18} aria-hidden="true" /></span><div><small>Email us</small><a href={`mailto:${site.email}`}>{site.email}</a></div></li>
+                <li><span className="icon-badge"><MapPin size={18} aria-hidden="true" /></span><div><small>Visit us</small><address>{site.address.street}<br />{site.address.city}, {site.address.region} {site.address.postalCode}, {site.address.country}</address></div></li>
+              </ul>
+            </div>
+            <div className="contact-promo">
+              <img src="/images/team.jpg" alt="" loading="lazy" width={900} height={600} />
+              <div className="contact-promo-body">
+                <p className="eyebrow">Prefer to talk?</p>
+                <h3>Speak with our team today.</h3>
+                <p>Get quick answers about services, hiring or open roles from a real person.</p>
+                <a className="button primary" href={telHref}><Phone size={17} aria-hidden="true" />Call Us Now</a>
+              </div>
+              <nav className="contact-quick" aria-label="Quick links">
+                <Link to="/contact?kind=hire_talent" onClick={() => switchKind("hire_talent")}><Users size={18} aria-hidden="true" /><span>Hire tech talent</span><ArrowUpRight size={17} aria-hidden="true" /></Link>
+                <Link to="/careers"><Briefcase size={18} aria-hidden="true" /><span>Browse open jobs</span><ArrowUpRight size={17} aria-hidden="true" /></Link>
+                <Link to="/careers/apply"><FileText size={18} aria-hidden="true" /><span>Send your résumé</span><ArrowUpRight size={17} aria-hidden="true" /></Link>
+                <Link to="/services"><Layers size={18} aria-hidden="true" /><span>Explore our services</span><ArrowUpRight size={17} aria-hidden="true" /></Link>
+              </nav>
             </div>
           </div>
 
@@ -155,6 +173,20 @@ export default function Contact() {
           )}
         </div>
       </div>
+      <div className="container contact-map-wrap">
+        <div className="contact-map">
+          <iframe title={`Map showing ${site.name} at ${site.address.street}, ${site.address.city}, ${site.address.region}`} src={mapEmbedUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+          <div className="map-card">
+            <p className="eyebrow">Our Office</p>
+            <h2>{site.name}</h2>
+            <address>{site.address.street}<br />{site.address.city}, {site.address.region} {site.address.postalCode}<br />{site.address.country}</address>
+            <a href={telHref}><Phone size={15} aria-hidden="true" />{site.phone}</a>
+            <a href={`mailto:${site.email}`}><Mail size={15} aria-hidden="true" />{site.email}</a>
+            <a className="button primary" href={mapLinkUrl} target="_blank" rel="noreferrer">Get Directions <Navigation size={16} aria-hidden="true" /></a>
+          </div>
+        </div>
+      </div>
     </section>
+    </InnerPage>
   );
 }

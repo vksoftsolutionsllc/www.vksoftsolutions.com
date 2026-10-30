@@ -54,7 +54,7 @@ function Shell({ session }: { session: Session }) {
   return (
     <div className={`admin-shell${open ? " nav-open" : ""}`}>
       <aside className="admin-side">
-        <div className="admin-brand"><span className="admin-logo">VK</span><div><strong>VK Soft Solutions</strong><small>Admin</small></div></div>
+        <div className="admin-brand"><img src="/logo-white.png" alt="VK Soft Solutions" width={970} height={175} /><small>Admin panel</small></div>
         <nav aria-label="Admin">
           {nav.map(n => <NavLink key={n.to} to={n.to} end={n.end}><n.icon size={17} aria-hidden="true" />{n.label}</NavLink>)}
         </nav>

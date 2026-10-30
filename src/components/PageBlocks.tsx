@@ -17,9 +17,10 @@ export function Breadcrumb({ items }: { items: Crumb[] }) {
   );
 }
 
-export function Hero({ eyebrow, title, copy, breadcrumbs, children, compact = false }: { eyebrow: string; title: ReactNode; copy: string; breadcrumbs: Crumb[]; children?: ReactNode; compact?: boolean }) {
+export function Hero({ eyebrow, title, copy, breadcrumbs, children, compact = false, image = "/images/office.jpg" }: { eyebrow: string; title: ReactNode; copy: string; breadcrumbs: Crumb[]; children?: ReactNode; compact?: boolean; image?: string }) {
   return (
-    <section className={`inner-hero${compact ? " inner-hero-compact" : ""}`}>
+    <section className={`inner-hero panel-dark${compact ? " inner-hero-compact" : ""}`}>
+      <div className="hero-bg" style={{ backgroundImage: `url(${image})` }} data-parallax="6" aria-hidden="true" />
       <div className="container">
         <Breadcrumb items={breadcrumbs} />
         <div className={`inner-hero-grid${children ? "" : " inner-hero-single"}`}>

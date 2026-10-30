@@ -17,8 +17,8 @@ type Stats = {
 };
 type Recent = { id: string; kind: "inquiry" | "application"; name: string; detail: string; status: string; created_at: string };
 
-// Validated pair (dataviz validator: CVD ΔE 25.4, normal ΔE 29.3, ≥3:1 on surface).
-const SERIES = { inquiries: "#B74D2B", applications: "#2a78d6" };
+// Validated pair (dataviz validator: CVD ΔE 28.2, normal ΔE 39.7, ≥3:1 on surface).
+const SERIES = { inquiries: "#0A4DB4", applications: "#eb6834" };
 const PIPELINE = ["new", "screening", "interview", "offer", "hired", "rejected"];
 const RANGES = [7, 30, 90];
 

@@ -1,6 +1,6 @@
 /* Admin panel — same tokens as the public site (globals.css), denser layout. */
 .admin-root{min-height:100vh;background:var(--bg);color:var(--text);font-size:14px}
-.admin-root h1,.admin-root h2,.admin-root h3{font-weight:500;letter-spacing:-.015em}
+.admin-root h1,.admin-root h2,.admin-root h3{font-family:var(--font-display);font-weight:400;letter-spacing:0}
 .admin-root p{color:var(--muted)}
 .admin-root input,.admin-root select,.admin-root textarea{width:100%;border:1px solid #c9c6bf;border-radius:7px;background:var(--surface-raised);color:var(--text);padding:9px 11px;font-size:14px;line-height:1.5}
 .admin-root input:focus-visible,.admin-root select:focus-visible,.admin-root textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
@@ -42,17 +42,19 @@
 
 /* Shell */
 .admin-shell{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
-.admin-side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;background:var(--text);color:#e8e6e1;padding:20px 14px}
-.admin-brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px}
+.admin-side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;background:var(--dark);color:#e8e6e1;padding:20px 14px}
+.admin-brand{display:grid;gap:6px;padding:6px 8px 24px}
+.admin-brand img{width:180px;height:auto}
+.auth-card .admin-brand img{width:220px}
 .admin-brand strong{display:block;font-size:14px;font-weight:600}
-.admin-brand small{font-size:11px;opacity:.7}
+.admin-brand small{font-size:11px;opacity:.7;letter-spacing:.06em;text-transform:uppercase}
 .admin-logo{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--accent);color:#fff;font-weight:700;font-size:13px;letter-spacing:.02em}
 .auth-card .admin-brand{padding:0 0 6px}
 .admin-side nav{display:grid;gap:2px}
 .admin-side nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:8px;color:#c9c7c1;font-size:14px}
 .admin-side nav a:hover{background:#ffffff12;color:#fff}
 .admin-side nav a.active{background:#ffffff1c;color:#fff}
-.admin-side nav a.active svg{color:#e3a184}
+.admin-side nav a.active svg{color:var(--brand-light)}
 .admin-side-foot{margin-top:auto;display:grid;gap:4px;border-top:1px solid #ffffff1f;padding-top:14px}
 .admin-side-foot a,.admin-side-foot button{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;color:#c9c7c1;font-size:13px;text-align:left}
 .admin-side-foot a:hover,.admin-side-foot button:hover{background:#ffffff12;color:#fff}
@@ -67,7 +69,7 @@
 .page-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;background:var(--surface-raised);padding:3px}
 .seg button{padding:5px 12px;border-radius:6px;font-size:12px;color:var(--muted)}
-.seg button[aria-pressed=true]{background:var(--text);color:#fff}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff}
 .alert.err{background:#fff2ef;color:#8e2e27;padding:12px 14px;border-radius:8px;margin-bottom:16px}
 
 /* Cards */
@@ -115,13 +117,13 @@
 .activity small{display:block;font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .activity time{font-size:11px;color:var(--muted);white-space:nowrap}
 .dot{width:8px;height:8px;border-radius:50%;flex:none}
-.dot.inquiry{background:#B74D2B}
-.dot.application{background:#2a78d6}
+.dot.inquiry{background:#0A4DB4}
+.dot.application{background:#eb6834}
 
 .pipeline,.status-list{list-style:none;padding:6px 18px 16px;margin:0;display:grid;gap:2px}
 .pipeline a{display:grid;grid-template-columns:86px minmax(0,1fr) 34px;align-items:center;gap:10px;padding:6px 0;font-size:13px}
 .pipeline .bar{height:10px;background:var(--surface);border-radius:4px;overflow:hidden}
-.pipeline .bar i{display:block;height:100%;background:#2a78d6;border-radius:0 4px 4px 0;min-width:0}
+.pipeline .bar i{display:block;height:100%;background:#eb6834;border-radius:0 4px 4px 0;min-width:0}
 .pipeline b,.status-list b{text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
 .status-list li>a,.status-list li>span:first-child{flex:1}
 .status-list li{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px}

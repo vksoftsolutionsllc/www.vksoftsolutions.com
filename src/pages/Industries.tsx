@@ -10,7 +10,7 @@ export function IndustriesOverview() {
   usePageMeta("Industries", "IT consulting, software engineering and technology talent for financial services, healthcare, technology, energy, retail and manufacturing.");
   return (
     <InnerPage>
-      <Hero eyebrow="Industry perspectives" title={<>Technology in context.<br /><span>Business comes first.</span></>} copy="The right solution depends on the work, the people and the environment around it. Explore how we support organizations across these sectors." breadcrumbs={[{ label: "Industries" }]} />
+      <Hero image="/images/architecture.jpg" eyebrow="Industry perspectives" title={<>Technology in context.<br /><span>Business comes first.</span></>} copy="The right solution depends on the work, the people and the environment around it. Explore how we support organizations across these sectors." breadcrumbs={[{ label: "Industries" }]} />
       <section className="inner-section inner-section-tight">
         <div className="container">
           <div className="inner-industry-layout">
@@ -47,7 +47,7 @@ export function IndustryDetail() {
   if (!ind) return <NotFound />;
   return (
     <InnerPage>
-      <Hero eyebrow="Industry perspectives" title={<>{ind.title}<span className="inner-title-dot">.</span></>} copy={ind.intro} breadcrumbs={[{ label: "Industries", href: "/industries" }, { label: ind.short }]}>
+      <Hero image={ind.image} eyebrow="Industry perspectives" title={<>{ind.title}<span className="inner-title-dot">.</span></>} copy={ind.intro} breadcrumbs={[{ label: "Industries", href: "/industries" }, { label: ind.short }]}>
         <SignalPanel label="Start with the business context" />
       </Hero>
       <section className="inner-section inner-section-tight">

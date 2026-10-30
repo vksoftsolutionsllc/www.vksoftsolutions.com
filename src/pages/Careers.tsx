@@ -40,7 +40,7 @@ export function CareersPage() {
 
   return (
     <InnerPage>
-      <Hero eyebrow="Careers" title={<>Good work starts<br /><span>with good people.</span></>} copy="Find your next role in software, data, cloud, QA and enterprise applications — on contract, contract-to-hire or full-time, with clients across the US and India." breadcrumbs={[{ label: "Careers" }]}>
+      <Hero image="/images/interview.jpg" eyebrow="Careers" title={<>Good work starts<br /><span>with good people.</span></>} copy="Find your next role in software, data, cloud, QA and enterprise applications — on contract, contract-to-hire or full-time, with clients across the US and India." breadcrumbs={[{ label: "Careers" }]}>
         <SignalPanel label="Your next opportunity" caption={<>Search open roles,<br />or send us your résumé.</>} index="Contract / C2H / Full-time" />
       </Hero>
       <section className="inner-section inner-section-tight" id="openings">
@@ -122,7 +122,7 @@ export function JobDetailPage() {
   return (
     <InnerPage>
       <script type="application/ld+json">{JSON.stringify(posting)}</script>
-      <Hero eyebrow={job.department} title={job.title} copy={job.summary} breadcrumbs={[{ label: "Careers", href: "/careers" }, { label: job.title }]} compact />
+      <Hero image="/images/engineer.jpg" eyebrow={job.department} title={job.title} copy={job.summary} breadcrumbs={[{ label: "Careers", href: "/careers" }, { label: job.title }]} compact />
       <section className="inner-section inner-section-tight">
         <div className="container job-detail-layout">
           <article className="inner-prose">
@@ -143,7 +143,7 @@ export function GeneralApplicationPage() {
   usePageMeta("Submit Your Résumé", "Send your résumé to VK Soft Solutions and we’ll match you with current and future technology roles.");
   return (
     <InnerPage>
-      <Hero eyebrow="Careers" title={<>Send us your résumé.<br /><span>We’ll find the fit.</span></>} copy="Our recruiters review every application and reach out when a role matches your skills and goals — often before it’s publicly posted." breadcrumbs={[{ label: "Careers", href: "/careers" }, { label: "Submit résumé" }]} compact />
+      <Hero image="/images/interview.jpg" eyebrow="Careers" title={<>Send us your résumé.<br /><span>We’ll find the fit.</span></>} copy="Our recruiters review every application and reach out when a role matches your skills and goals — often before it’s publicly posted." breadcrumbs={[{ label: "Careers", href: "/careers" }, { label: "Submit résumé" }]} compact />
       <section className="inner-section inner-section-tight">
         <div className="container job-detail-layout">
           <div className="inner-prose">

@@ -39,7 +39,7 @@ export function OfferingsOverview({ section }: { section: Section }) {
   const other = section === "services" ? sectionInfo.talent : sectionInfo.services;
   return (
     <InnerPage>
-      <Hero eyebrow={info.eyebrow} title={<>{info.title[0]}<br /><span>{info.title[1]}</span></>} copy={info.copy} breadcrumbs={[{ label: info.label }]}>
+      <Hero image={section === "services" ? "/images/workspace.jpg" : "/images/team.jpg"} eyebrow={info.eyebrow} title={<>{info.title[0]}<br /><span>{info.title[1]}</span></>} copy={info.copy} breadcrumbs={[{ label: info.label }]}>
         <SignalPanel label={info.signal} />
       </Hero>
       <section className="inner-section inner-section-tight">
@@ -80,7 +80,7 @@ export function OfferingDetail({ section }: { section: Section }) {
   const contact = section === "talent" ? `/contact?kind=hire_talent&service=${s.formService}` : `/contact?service=${s.formService}`;
   return (
     <InnerPage>
-      <Hero eyebrow={s.title} title={<>{s.headline[0]}<br /><span>{s.headline[1]}</span></>} copy={s.lead} breadcrumbs={[{ label: info.label, href: `/${section}` }, { label: s.title }]}>
+      <Hero image={s.image} eyebrow={s.title} title={<>{s.headline[0]}<br /><span>{s.headline[1]}</span></>} copy={s.lead} breadcrumbs={[{ label: info.label, href: `/${section}` }, { label: s.title }]}>
         <SignalPanel label={s.eyebrow} />
       </Hero>
       <section className="inner-section inner-section-tight">

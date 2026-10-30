@@ -46,7 +46,7 @@ export function LoginPage() {
   return (
     <div className="auth-wrap">
       <form className="auth-card" onSubmit={submit}>
-        <div className="admin-brand"><span className="admin-logo">VK</span><div><strong>VK Soft Solutions</strong><small>Admin panel</small></div></div>
+        <div className="admin-brand"><img src="/logo.png" alt="VK Soft Solutions" width={970} height={175} /><small>Admin panel</small></div>
         <h1>{heading}</h1>
         <label>Email<input type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} /></label>
         {mode === "signin" && <label>Password<input type="password" required autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} /></label>}
