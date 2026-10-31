@@ -1,6 +1,6 @@
 // POST /api/submit — the only write path for public forms.
 // Flow: same-origin check → honeypot → validation → Turnstile → rate limit → insert.
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { db } from "./_lib/db.js";
 import { verifyTurnstile } from "./_lib/turnstile.js";
 import { text, Validator } from "./_lib/validate.js";
@@ -95,8 +95,8 @@ export async function POST(req: Request): Promise<Response> {
     await pool.query("insert into submission_log (ip_hash, kind) values ($1, $2)", [ipHash, type]);
     if (Math.random() < 0.05) await pool.query("delete from submission_log where created_at < now() - interval '2 days'");
 
-    const id = await prepared.save({ ipHash, userAgent, sourcePage });
-    return json({ ok: true, id });
+    const saved = await prepared.save({ ipHash, userAgent, sourcePage });
+    return json({ ok: true, ...saved });
   } catch (err) {
     console.error("submit", type, err);
     return json({ ok: false, error: "We couldn’t save your submission. Please try again." }, 500);
@@ -108,7 +108,25 @@ export function GET() {
 }
 
 type Meta = { ipHash: string; userAgent: string | null; sourcePage: string | null };
-type Prepared = { save: (meta: Meta) => Promise<string | undefined> };
+type Saved = { id?: string; reference?: string };
+type Prepared = { save: (meta: Meta) => Promise<Saved> };
+
+// Unambiguous characters only (no 0/O, 1/I/L) so codes are easy to read out over the phone.
+const REF_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+/** e.g. VKA-261031-7F3K9Q — date for humans, 6 random chars (~887M per day) for uniqueness. */
+function referenceCode() {
+  const d = new Date();
+  const date = `${String(d.getUTCFullYear()).slice(2)}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
+  const rand = Array.from(randomBytes(6), b => REF_ALPHABET[b % REF_ALPHABET.length]).join("");
+  return `VKA-${date}-${rand}`;
+}
+
+/** Stored name = reference + cleaned original name, so uploads can never overwrite or be confused with each other. */
+function storedFileName(reference: string, original: string, ext: string) {
+  const base = original.replace(/\.[^.]+$/, "").normalize("NFKD").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "resume";
+  return `${reference}_${base}.${ext}`;
+}
 
 function prepareContact(b: Body, v: Validator): Prepared {
   const kind = v.oneOf("kind", text(b.kind, 20) || "project", INQUIRY_KINDS, "Inquiry type");
@@ -135,7 +153,7 @@ function prepareContact(b: Body, v: Validator): Prepared {
         `insert into inquiries (kind, name, email, phone, company, service, message, details, source_page, ip_hash, user_agent)
          values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning id`,
         [kind, name, email, phone, company, service, message, JSON.stringify(details), m.sourcePage, m.ipHash, m.userAgent]);
-      return r.rows[0].id;
+      return { id: r.rows[0].id };
     },
   };
 }
@@ -153,7 +171,7 @@ function prepareApplication(b: Body, v: Validator): Prepared {
   if (jobId && !/^[0-9a-f-]{36}$/i.test(jobId)) v.errors.jobId = "Unknown job.";
 
   const resume = b.resume as { name?: unknown; type?: unknown; data?: unknown } | undefined;
-  let file: { name: string; type: string; bytes: Buffer } | null = null;
+  let file: { name: string; ext: string; type: string; bytes: Buffer } | null = null;
   if (!resume || typeof resume.data !== "string") {
     v.errors.resume = "Please attach your résumé (PDF or Word).";
   } else {
@@ -165,7 +183,7 @@ function prepareApplication(b: Body, v: Validator): Prepared {
       || (RESUME_TYPES[type] === "doc" && head === "d0cf11e0");
     if (!RESUME_TYPES[type] || !magicOk) v.errors.resume = "Upload a PDF, DOC or DOCX file.";
     else if (bytes.length > RESUME_MAX_BYTES) v.errors.resume = "Résumé must be 2.5 MB or smaller.";
-    else file = { name: text(resume.name, 200).replace(/[^\w.\- ()]/g, "_") || `resume.${RESUME_TYPES[type]}`, type, bytes };
+    else file = { name: text(resume.name, 200).replace(/[^\w.\- ()]/g, "_") || `resume.${RESUME_TYPES[type]}`, ext: RESUME_TYPES[type], type, bytes };
   }
 
   return {
@@ -179,19 +197,33 @@ function prepareApplication(b: Body, v: Validator): Prepared {
           const j = await client.query("select id, title from jobs where id = $1 and is_published", [jobId]);
           if (j.rowCount) { job = j.rows[0].id; jobTitle = j.rows[0].title; }
         }
-        const r = await client.query(
-          `insert into job_applications (job_id, job_title, name, email, phone, location, linkedin, experience_years,
-             work_authorization, cover_letter, has_resume, source_page, ip_hash, user_agent)
-           values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) returning id`,
-          [job, jobTitle, name, email, phone, location, linkedin, experience, workAuth, coverLetter, Boolean(file), m.sourcePage, m.ipHash, m.userAgent]);
-        const id = r.rows[0].id as string;
+        // Retry with a fresh code on the (astronomically unlikely) chance of a duplicate.
+        let id = "";
+        let reference = "";
+        for (let attempt = 0; !id; attempt++) {
+          reference = referenceCode();
+          await client.query("savepoint new_application");
+          try {
+            const r = await client.query(
+              `insert into job_applications (reference_code, job_id, job_title, name, email, phone, location, linkedin, experience_years,
+                 work_authorization, cover_letter, has_resume, source_page, ip_hash, user_agent)
+               values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) returning id`,
+              [reference, job, jobTitle, name, email, phone, location, linkedin, experience, workAuth, coverLetter, Boolean(file), m.sourcePage, m.ipHash, m.userAgent]);
+            id = r.rows[0].id;
+          } catch (err) {
+            await client.query("rollback to savepoint new_application");
+            if ((err as { code?: string }).code !== "23505" || attempt >= 4) throw err;
+          }
+        }
         if (file) {
           await client.query(
-            "insert into application_files (application_id, filename, mime_type, size_bytes, data) values ($1,$2,$3,$4,$5)",
-            [id, file.name, file.type, file.bytes.length, file.bytes]);
+            `insert into application_files (application_id, filename, original_filename, mime_type, size_bytes, sha256, data)
+             values ($1,$2,$3,$4,$5,$6,$7)`,
+            [id, storedFileName(reference, file.name, file.ext), file.name, file.type, file.bytes.length,
+              createHash("sha256").update(file.bytes).digest("hex"), file.bytes]);
         }
         await client.query("commit");
-        return id;
+        return { id, reference };
       } catch (err) {
         await client.query("rollback");
         throw err;
@@ -210,7 +242,7 @@ function prepareNewsletter(b: Body, v: Validator): Prepared {
         `insert into newsletter_subscribers (email, source_page, ip_hash) values ($1,$2,$3)
          on conflict (email) do update set status = 'active'`,
         [email, m.sourcePage, m.ipHash]);
-      return undefined;
+      return {};
     },
   };
 }

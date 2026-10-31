@@ -105,16 +105,19 @@ export function downloadCsv(filename: string, rows: Record<string, unknown>[], c
   URL.revokeObjectURL(url);
 }
 
+/** Downloads a résumé under its unique stored name and verifies its SHA-256 checksum. */
 export async function downloadResume(applicationId: string) {
   const { data, error } = await supabase.rpc("get_resume", { p_application_id: applicationId });
   if (error) throw error;
-  const row = (data as { filename: string; mime_type: string; data_base64: string }[])[0];
+  const row = (data as { filename: string; mime_type: string; sha256: string | null; data_base64: string }[])[0];
   if (!row) throw new Error("No résumé on file");
   const bytes = Uint8Array.from(atob(row.data_base64), c => c.charCodeAt(0));
+  const digest = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", bytes)), b => b.toString(16).padStart(2, "0")).join("");
   const url = URL.createObjectURL(new Blob([bytes], { type: row.mime_type }));
   const a = Object.assign(document.createElement("a"), { href: url, download: row.filename });
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return { filename: row.filename, verified: !row.sha256 || row.sha256 === digest };
 }
 
 export function PageHead({ title, sub, actions }: { title: string; sub?: string; actions?: ReactNode }) {

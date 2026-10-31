@@ -5,6 +5,7 @@ import Turnstile, { type TurnstileHandle } from "./Turnstile";
 import FormField, { fieldA11y } from "./FormField";
 import { RESUME_MAX_BYTES, RESUME_TYPES, WORK_AUTH_OPTIONS } from "../shared/forms";
 import { fileToBase64, submitForm } from "../lib/submit";
+import { scrollToAndFocus } from "../lib/motion";
 
 const empty = { name: "", email: "", phone: "", location: "", linkedin: "", experience: "", workAuthorization: "", coverLetter: "", website: "" };
 type Fields = typeof empty;
@@ -21,6 +22,7 @@ export default function ApplicationForm({ jobId, jobTitle }: { jobId?: string; j
   const [token, setToken] = useState("");
   const [sending, setSending] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [reference, setReference] = useState("");
   const [dragging, setDragging] = useState(false);
   const ts = useRef<TurnstileHandle>(null);
   const form = useRef<HTMLFormElement>(null);
@@ -28,7 +30,18 @@ export default function ApplicationForm({ jobId, jobTitle }: { jobId?: string; j
   const success = useRef<HTMLDivElement>(null);
   const requestId = useRef<string | null>(null);
 
-  useEffect(() => { if (saved) success.current?.focus(); }, [saved]);
+  useEffect(() => { if (saved && success.current) scrollToAndFocus(success.current); }, [saved]);
+
+  // After a failed submit, glide to the first problem field (or the error banner).
+  function revealError(first?: string) {
+    requestAnimationFrame(() => {
+      const field = first ? form.current?.elements.namedItem(first) : null;
+      const target = field instanceof HTMLElement && !(field instanceof HTMLInputElement && field.type === "file") ? field
+        : first === "resume" ? form.current?.querySelector<HTMLElement>(".file-drop button")
+        : form.current?.querySelector<HTMLElement>(".contact-form-error, .turnstile-field");
+      if (target) scrollToAndFocus(target, -160);
+    });
+  }
 
   function update(name: keyof Fields, value: string) {
     setFields(f => ({ ...f, [name]: value }));
@@ -49,19 +62,18 @@ export default function ApplicationForm({ jobId, jobTitle }: { jobId?: string; j
     e.preventDefault();
     if (sending) return;
     setError("");
-    if (!file) { setErrors(x => ({ ...x, resume: "Please attach your résumé (PDF or Word)." })); setError("Please attach your résumé."); return; }
-    if (!token) { setError("Please complete the security check below."); return; }
+    if (!file) { setErrors(x => ({ ...x, resume: "Please attach your résumé (PDF or Word)." })); setError("Please attach your résumé."); revealError("resume"); return; }
+    if (!token) { setError("Please complete the security check below."); revealError(); return; }
     setSending(true);
     requestId.current ??= crypto.randomUUID();
     const data = await fileToBase64(file);
     const res = await submitForm({ type: "application", jobId, ...fields, resume: { name: file.name, type: file.type, data }, token, requestId: requestId.current });
     setSending(false);
-    if (res.ok) { setSaved(true); return; }
+    if (res.ok) { setReference(res.reference ?? ""); setSaved(true); return; }
     setError(res.error);
     setErrors(res.fields ?? {});
     ts.current?.reset();
-    const first = res.fields && Object.keys(res.fields)[0];
-    if (first) (form.current?.elements.namedItem(first) as HTMLElement | null)?.focus();
+    revealError(res.fields && Object.keys(res.fields)[0]);
   }
 
   const bind = (name: keyof Fields) => ({ ...fieldA11y(name, errors[name]), value: fields[name], disabled: sending, onChange: (e: { target: { value: string } }) => update(name, e.target.value) });
@@ -73,6 +85,7 @@ export default function ApplicationForm({ jobId, jobTitle }: { jobId?: string; j
         <span className="eyebrow">APPLICATION RECEIVED</span>
         <h2>Thanks for applying,<br />{fields.name.split(" ")[0]}.</h2>
         <p>Your application for <strong>{jobTitle}</strong> is with our recruiting team. If your experience is a match, a recruiter will contact you at {fields.email}.</p>
+        {reference && <p className="ref-code">Reference number <strong>{reference}</strong><small>Please quote this if you contact us about your application.</small></p>}
         <Link className="button secondary" to="/careers">Browse more roles <ArrowUpRight size={17} aria-hidden="true" /></Link>
       </div>
     );

@@ -21,6 +21,12 @@
 .contact-success .eyebrow{color:#fff}
 .contact-success>svg{color:var(--brand-light)!important}
 .contact-success .text-link{color:var(--brand-light)!important}
+.contact-success:focus,.newsletter-done:focus{outline:none}
+.contact-success{animation:success-in .6s cubic-bezier(.2,.7,.2,1)}
+@keyframes success-in{from{opacity:0;transform:translateY(16px) scale(.98)}}
+.ref-code{display:grid;gap:4px;padding:16px 18px;border-radius:12px;background:rgba(255,255,255,.07);border:1px dashed rgba(143,186,255,.45);color:var(--on-dark-muted)!important;font-size:13px!important;max-width:none!important}
+.ref-code strong{font-family:var(--font-display);font-weight:400;font-size:22px;letter-spacing:.06em;color:#fff}
+.ref-code small{font-size:12px}
 .contact-info{list-style:none;padding:0;margin:4px 0 0;display:grid;gap:16px}
 .contact-info li{display:flex;align-items:center;gap:14px}
 .contact-info .icon-badge{width:46px;height:46px;flex:none}

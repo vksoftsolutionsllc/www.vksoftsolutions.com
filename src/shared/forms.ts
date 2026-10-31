@@ -40,4 +40,4 @@ export function serviceLabel(value: string) {
   return SERVICE_OPTIONS.find(s => s.value === value)?.label ?? value;
 }
 
-export type SubmitResponse = { ok: true; id?: string } | { ok: false; error: string; fields?: Record<string, string> };
+export type SubmitResponse = { ok: true; id?: string; reference?: string } | { ok: false; error: string; fields?: Record<string, string> };

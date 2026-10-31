@@ -7,6 +7,7 @@ import { Hero, InnerPage, SignalPanel } from "../components/PageBlocks";
 import { ENGAGEMENT_TYPES, HEADCOUNT_OPTIONS, INQUIRY_KINDS, SERVICE_OPTIONS, TIMELINE_OPTIONS, type InquiryKind } from "../shared/forms";
 import { submitForm } from "../lib/submit";
 import { usePageMeta } from "../lib/meta";
+import { scrollToAndFocus } from "../lib/motion";
 import { mapEmbedUrl, mapLinkUrl, site, telHref } from "../config/site";
 
 const KIND_LABELS: Record<InquiryKind, { tab: string; heading: string; sub: string; message: string; placeholder: string }> = {
@@ -39,7 +40,16 @@ export default function Contact() {
   const ts = useRef<TurnstileHandle>(null);
   const copy = KIND_LABELS[kind];
 
-  useEffect(() => { if (saved) success.current?.focus(); }, [saved]);
+  useEffect(() => { if (saved && success.current) scrollToAndFocus(success.current); }, [saved]);
+
+  // After a failed submit, glide to the first problem field (or the error banner).
+  function revealError(first?: string) {
+    requestAnimationFrame(() => {
+      const field = first ? form.current?.elements.namedItem(first) : null;
+      const target = field instanceof HTMLElement ? field : form.current?.querySelector<HTMLElement>(".contact-form-error, .turnstile-field");
+      if (target) scrollToAndFocus(target, -160);
+    });
+  }
 
   function update(name: keyof Fields, value: string) {
     setFields(f => ({ ...f, [name]: value }));
@@ -58,7 +68,7 @@ export default function Contact() {
     e.preventDefault();
     if (sending) return;
     setError("");
-    if (!token) { setErrors(x => ({ ...x, token: "Please complete the security check." })); setError("Please complete the security check below."); return; }
+    if (!token) { setErrors(x => ({ ...x, token: "Please complete the security check." })); setError("Please complete the security check below."); revealError(); return; }
     setSending(true);
     requestId.current ??= crypto.randomUUID();
     const res = await submitForm({ type: "contact", kind, ...fields, token, requestId: requestId.current });
@@ -67,8 +77,7 @@ export default function Contact() {
     setError(res.error);
     setErrors(res.fields ?? {});
     ts.current?.reset();
-    const first = res.fields && Object.keys(res.fields)[0];
-    if (first) (form.current?.elements.namedItem(first) as HTMLElement | null)?.focus();
+    revealError(res.fields && Object.keys(res.fields)[0]);
   }
 
   const bind = (name: keyof Fields) => ({ ...fieldA11y(name, errors[name]), value: fields[name], disabled: sending, onChange: (e: { target: { value: string } }) => update(name, e.target.value) });

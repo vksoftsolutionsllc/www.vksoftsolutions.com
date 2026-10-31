@@ -36,6 +36,13 @@ export function scrollToElement(el: HTMLElement) {
   else el.scrollIntoView();
 }
 
+/** Glide an element into view below the fixed header, then give it focus (for form results and errors). */
+export function scrollToAndFocus(el: HTMLElement, offset = -130) {
+  el.focus({ preventScroll: true });
+  if (lenis) lenis.scrollTo(el, { offset, duration: 1.1 });
+  else el.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" });
+}
+
 // Heading styles (data-anim values):
 //   words    — words slide in from the right            (default for section h2)
 //   chars    — characters slide in, staggered

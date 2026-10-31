@@ -227,3 +227,4 @@
   .kpi strong{font-size:28px}
   .toolbar select{flex:1}
 }
+.detail code.ref{font-family:ui-monospace,Consolas,monospace;font-size:13px;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:var(--accent);letter-spacing:.04em}

@@ -5,7 +5,7 @@ import { supabase } from "./supabase";
 import { downloadCsv, downloadResume, Drawer, Empty, fmtDate, fmtDateTime, PageHead, Pager, searchTerm, StatusBadge, titleCase, useDebounced, useToast } from "./ui";
 
 type Application = {
-  id: string; created_at: string; job_id: string | null; job_title: string; name: string; email: string; phone: string | null;
+  id: string; reference_code: string; created_at: string; job_id: string | null; job_title: string; name: string; email: string; phone: string | null;
   location: string | null; linkedin: string | null; experience_years: string | null; work_authorization: string | null;
   cover_letter: string | null; has_resume: boolean; status: string; notes: string | null;
 };
@@ -46,7 +46,7 @@ export default function Applications() {
     if (status) b = b.eq("status", status);
     if (job) b = b.eq("job_title", job);
     const t = searchTerm(query);
-    if (t) b = b.or(`name.ilike.*${t}*,email.ilike.*${t}*,location.ilike.*${t}*,job_title.ilike.*${t}*`);
+    if (t) b = b.or(`reference_code.ilike.*${t}*,name.ilike.*${t}*,email.ilike.*${t}*,location.ilike.*${t}*,job_title.ilike.*${t}*`);
     return b;
   }, [status, job, query]);
 
@@ -91,7 +91,10 @@ export default function Applications() {
 
   async function resume(id: string) {
     setDownloading(true);
-    try { await downloadResume(id); } catch (e) { toast((e as Error).message, "err"); }
+    try {
+      const r = await downloadResume(id);
+      toast(r.verified ? `Downloaded ${r.filename} · checksum verified` : `Downloaded ${r.filename} · WARNING: checksum mismatch`, r.verified ? "ok" : "err");
+    } catch (e) { toast((e as Error).message, "err"); }
     setDownloading(false);
   }
 
@@ -99,7 +102,7 @@ export default function Applications() {
     const { data, error } = await build().range(0, 4999);
     if (error) { toast(error.message, "err"); return; }
     downloadCsv(`applications-${new Date().toISOString().slice(0, 10)}.csv`, data as Application[],
-      [["created_at", "Date"], ["job_title", "Job"], ["name", "Name"], ["email", "Email"], ["phone", "Phone"], ["location", "Location"], ["experience_years", "Experience"], ["work_authorization", "Work authorization"], ["linkedin", "LinkedIn"], ["status", "Status"], ["notes", "Notes"], ["cover_letter", "Message"]]);
+      [["reference_code", "Reference"], ["created_at", "Date"], ["job_title", "Job"], ["name", "Name"], ["email", "Email"], ["phone", "Phone"], ["location", "Location"], ["experience_years", "Experience"], ["work_authorization", "Work authorization"], ["linkedin", "LinkedIn"], ["status", "Status"], ["notes", "Notes"], ["cover_letter", "Message"]]);
   }
 
   return (
@@ -107,7 +110,7 @@ export default function Applications() {
       <PageHead title="Applications" sub="Candidates who applied through the careers pages."
         actions={<button type="button" className="btn ghost" onClick={exportCsv}><Download size={15} aria-hidden="true" />Export CSV</button>} />
       <div className="toolbar">
-        <label className="search"><Search size={15} aria-hidden="true" /><input type="search" placeholder="Search name, email, location, role" value={q} onChange={e => { setQ(e.target.value); setPage(0); }} aria-label="Search applications" /></label>
+        <label className="search"><Search size={15} aria-hidden="true" /><input type="search" placeholder="Search reference, name, email, location, role" value={q} onChange={e => { setQ(e.target.value); setPage(0); }} aria-label="Search applications" /></label>
         <select value={status} onChange={e => setFilter("status", e.target.value)} aria-label="Stage"><option value="">All stages</option>{STATUSES.map(s => <option key={s} value={s}>{titleCase(s)}</option>)}</select>
         <select value={job} onChange={e => setFilter("job", e.target.value)} aria-label="Job"><option value="">All roles</option>{jobs.map(j => <option key={j} value={j}>{j}</option>)}</select>
       </div>
@@ -119,7 +122,7 @@ export default function Applications() {
               {rows.map(r => (
                 <tr key={r.id} onClick={() => open(r)} tabIndex={0} onKeyDown={e => { if (e.key === "Enter") open(r); }} className={r.status === "new" ? "unread" : undefined}>
                   <td>{fmtDate(r.created_at)}</td>
-                  <td><strong>{r.name}</strong><small>{r.location ?? r.email}</small></td>
+                  <td><strong>{r.name}</strong><small>{r.reference_code} · {r.location ?? r.email}</small></td>
                   <td className="hide-sm">{r.job_title}</td>
                   <td className="hide-md">{r.experience_years ? `${r.experience_years} yrs` : "—"}</td>
                   <td className="hide-md">{r.work_authorization ?? "—"}</td>
@@ -142,6 +145,7 @@ export default function Applications() {
           <>
             <div className="detail-meta"><StatusBadge status={selected.status} /><span>{selected.job_title}</span><span>{fmtDateTime(selected.created_at)}</span></div>
             <dl className="detail">
+              <dt>Reference</dt><dd><code className="ref">{selected.reference_code}</code></dd>
               <dt>Email</dt><dd><a href={`mailto:${selected.email}`}>{selected.email}</a></dd>
               {selected.phone && <><dt>Phone</dt><dd><a href={`tel:${selected.phone}`}>{selected.phone}</a></dd></>}
               <dt>Location</dt><dd>{selected.location ?? "—"}</dd>

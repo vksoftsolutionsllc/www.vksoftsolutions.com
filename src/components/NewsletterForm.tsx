@@ -1,7 +1,8 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, CheckCircle2, LoaderCircle } from "lucide-react";
 import Turnstile, { type TurnstileHandle } from "./Turnstile";
 import { submitForm } from "../lib/submit";
+import { scrollToAndFocus } from "../lib/motion";
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState("");
@@ -11,6 +12,9 @@ export default function NewsletterForm() {
   const [error, setError] = useState("");
   const [armed, setArmed] = useState(false);
   const ts = useRef<TurnstileHandle>(null);
+  const done = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => { if (state === "done" && done.current) scrollToAndFocus(done.current, -200); }, [state]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -26,7 +30,7 @@ export default function NewsletterForm() {
   }
 
   if (state === "done") {
-    return <p className="newsletter-done" role="status"><CheckCircle2 size={18} aria-hidden="true" /> Thanks — you’re subscribed.</p>;
+    return <p className="newsletter-done" role="status" tabIndex={-1} ref={done}><CheckCircle2 size={18} aria-hidden="true" /> Thanks — you’re subscribed. Look out for our next insights in your inbox.</p>;
   }
 
   return (
